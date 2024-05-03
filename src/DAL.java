@@ -1,3 +1,4 @@
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -66,6 +67,13 @@ public class DAL
         }
     }
 
-
+    public void callAddToGameSales(int newSaleId, String GameName, int Price) throws SQLException
+    {
+        CallableStatement myStoredProcedureCall = connection.prepareCall("{Call addToGameSales(?)}");
+        myStoredProcedureCall.setInt(1, newSaleId);
+        myStoredProcedureCall.setString(2, GameName);
+        myStoredProcedureCall.setInt(3, Price);
+        ResultSet myResults = myStoredProcedureCall.executeQuery();
+    }
 
 }
