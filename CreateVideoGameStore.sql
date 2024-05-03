@@ -59,3 +59,13 @@ INSERT INTO Game(GameId, GameName, GamePrice, ReleaseDate, Genre) VALUES (15,"De
 INSERT INTO Game(GameId, GameName, GamePrice, ReleaseDate, Genre) VALUES (16,"Mortal Kombat 11", 50, "April 23, 2019","Fighting");
 INSERT INTO Game(GameId, GameName, GamePrice, ReleaseDate, Genre) VALUES (17,"Super Smash Bros. Ultimate", 60, "December 7, 2018","Fighting");
 INSERT INTO Game(GameId, GameName, GamePrice, ReleaseDate, Genre) VALUES (18,"Soulcalibur VI", 30, "October 19, 2018","Fighting");
+
+
+delimiter $$
+DROP PROCEDURE IF EXISTS addToGameSales$$ 
+CREATE PROCEDURE addToGameSales (newSaleID int, newGameTitle varchar(200), newPrice int)
+BEGIN
+INSERT INTO GameSales(SaleID, GameTitle, Price)
+VALUES (newSaleID, newGameTitle, newPrice);
+END;
+$$
