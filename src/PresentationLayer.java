@@ -20,10 +20,10 @@ public class PresentationLayer
         DAL dal = getDAL();
         System.out.println("Welcome to the VideoGame Shop! Here is the current inventory.");
         List<String> inventory = dal.getInventory();
-        System.out.println("Game  ID" +  "Game Name" +  "Game Price" +  "Release Date" + "Game Genre");
-        for(int i =0; i <= inventory.size(); i++)
+        System.out.println("Game  ID " +  "Game Name " +  "Game Price " +  "Release Date " + "Game Genre");
+        for(int i = 0; i <= inventory.size(); i++)
         {
-            System.out.println(inventory.indexOf(0) + inventory.indexOf(1) + "$" + inventory.indexOf(2) +  inventory.indexOf(3) + inventory.indexOf(4));
+            System.out.println(inventory.indexOf(0) + " " + inventory.indexOf(1) + " " + "$" + inventory.indexOf(2) + " " +  inventory.indexOf(3) + " " + inventory.indexOf(4));
         }
     }
 }

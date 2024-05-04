@@ -69,3 +69,15 @@ INSERT INTO GameSales(SaleID, GameTitle, Price)
 VALUES (newSaleID, newGameTitle, newPrice);
 END;
 $$
+
+delimiter $$
+DROP PROCEDURE IF EXISTS searchByGenre$$
+CREATE PROCEDURE searchByGenre (newGenreSearch)
+BEGIN 
+SELECT Game.GameName, Game.GamePrice, Game.Genre
+FROM Genre
+INNER JOIN Game ON Genre.GenreName = Game.Genre
+WHERE Genre.GenreName = newGenreSearch
+ORDER BY Game.GameName;
+END; $$
+delimiter ;
