@@ -1,4 +1,5 @@
 import java.io.Console;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
@@ -30,14 +31,18 @@ public class PresentationLayer
         System.out.println("Would you like to search by Action, RPG, Shooter, Platformer, Horror, Fighting, or None?");
         Scanner genre = new Scanner(System.in);
         String pickGenre = genre.nextLine();
-        List<String> searchResults = null;
+        ResultSet searchResults = null;
         if(pickGenre.equals("None"))
         {
             return;
         }
         else
         {
-            dal.callSearchByGenre(pickGenre);
+            dal.callSearchByGenre(pickGenre); //still need to figure out how to print ou the results
+            //searchResults.equals(dal.callSearchByGenre(pickGenre));
+            //System.out.println("Game" + "Price" + "Genre");
+
         }
+        genre.close();
     }
 }

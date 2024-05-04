@@ -77,4 +77,11 @@ public class DAL
         return myResults;
     }
 
+    public ResultSet callSearchByGenre(String genreSearch) throws SQLException
+    {
+        CallableStatement myStoredProcedureCall = connection.prepareCall("{Call searchByGenre(?)}");
+        myStoredProcedureCall.setString(1, genreSearch);
+        ResultSet myResults = myStoredProcedureCall.executeQuery();
+        return myResults;
+    }
 }
