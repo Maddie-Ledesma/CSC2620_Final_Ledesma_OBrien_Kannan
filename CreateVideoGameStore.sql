@@ -76,6 +76,12 @@ INSERT INTO Customer(Id, FirstName, LastName) VALUE (2, "Maria", "Doe");
 INSERT INTO Customer(Id, FirstName, LastName) VALUE (3, "Will", "Doe");
 INSERT INTO Customer(Id, FirstName, LastName) VALUE (4, "Jose", "Doe");
 
+INSERT INTO Sales(Id, SalesDate, CustomerId) VALUE (1, '2020-12-23', 1); 
+INSERT INTO Sales(Id, SalesDate, CustomerId) VALUE (2, "2017-12-23", 2);
+INSERT INTO Sales(Id, SalesDate, CustomerId) VALUE (3, "2019-5-20", 3);
+INSERT INTO Sales(Id, SalesDate, CustomerId) VALUE (4, "2020-1-25", 4);
+
+
 delimiter $$
 DROP PROCEDURE IF EXISTS addToGameSales$$ 
 CREATE PROCEDURE addToGameSales (newSaleID int, newGameTitle varchar(200), newPrice int)
@@ -88,12 +94,51 @@ delimiter ;
 
 delimiter $$
 DROP PROCEDURE IF EXISTS searchByGenre$$
-CREATE PROCEDURE searchByGenre (newGenreSearch varchar(200))
+CREATE PROCEDURE searchByGenre (GenreSearchId int )
 BEGIN 
-SELECT Game.GameName, Game.GamePrice, Game.Genre
-FROM Genre
-INNER JOIN Game ON Genre.GenreName = Game.Genre
-WHERE Genre.GenreName = newGenreSearch
-ORDER BY Game.GameName;
+
+SELECT g.Id, g.Name, g.ReleaseDate, g.Quantity, g.GenreId, g.Price, ge.Name as GenreName
+FROM Game as g join Genre as ge on g.GenreId = ge.id
+WHERE ge.Id = GenreSearchId
+ORDER BY g.Name;
+
+END; $$
+delimiter ;
+
+delimiter $$
+DROP PROCEDURE IF EXISTS showGamesInStock$$
+CREATE PROCEDURE showGamesInStock ()
+BEGIN
+    SELECT ga.Id, ga.Name, ga.ReleaseDate, ga.Quantity, ga.GenreId, ga.Price, ge.Name as GenreName
+    FROM Game AS ga
+    INNER JOIN Genre AS ge ON ge.Id = ga.GenreId
+    ORDER BY ge.Name, ga.Name;
+END; $$
+delimiter ;
+
+
+delimiter $$
+Drop Procedure if exists PopularGames$$
+create procedure PopularGames ()
+BEGIN
+
+SELECT Sum(sd.Quantity), g.Name
+FROM Game as g join SalesDetails as sd on g.id = sd.GameId
+Group by g.Name
+ORDER BY 1 desc, 2 asc;
+
+END; $$
+delimiter ;
+
+delimiter $$
+Drop Procedure if exists TrackCustomerPurchases$$
+create procedure TrackCustomerPurchases (CustomerSearchId int)
+BEGIN
+
+SELECT g.Name, sd.Quantity, sd.Price, s.SalesDate, ge.Name as GenreName
+FROM Sales as s join SalesDetails as sd on s.id = sd.SalesId join Games as g on g.Id = sd.GameId join Genre as ge on g.GenreId = ge.Id
+WHERE s.CustomerId = CustomerSearchId
+ORDER BY 4, 1;
+
 END; $$
 delimiter ;
