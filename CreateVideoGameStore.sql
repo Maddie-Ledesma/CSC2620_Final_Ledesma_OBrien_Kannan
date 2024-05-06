@@ -81,6 +81,22 @@ INSERT INTO Sales(Id, SalesDate, CustomerId) VALUE (2, "2017-12-23", 2);
 INSERT INTO Sales(Id, SalesDate, CustomerId) VALUE (3, "2019-5-20", 3);
 INSERT INTO Sales(Id, SalesDate, CustomerId) VALUE (4, "2020-1-25", 4);
 
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(1, 1, 1, 60);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(1, 2, 1, 70);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(1, 3, 1, 70);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(1, 18, 1, 30);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(2, 1, 1, 60);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(2, 6, 1, 70);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(2, 12, 1, 20);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(2, 16, 1, 50);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(3, 1, 1, 60);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(3, 6, 1, 70);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(3, 10, 1, 25);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(3, 17, 1, 60);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(4, 1, 1, 60);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(4, 6, 1, 70);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(4, 10, 1, 25);
+INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(4, 17, 1, 60);
 
 delimiter $$
 DROP PROCEDURE IF EXISTS addToGameSales$$ 
@@ -136,7 +152,7 @@ create procedure TrackCustomerPurchases (CustomerSearchId int)
 BEGIN
 
 SELECT g.Name, sd.Quantity, sd.Price, s.SalesDate, ge.Name as GenreName
-FROM Sales as s join SalesDetails as sd on s.id = sd.SalesId join Games as g on g.Id = sd.GameId join Genre as ge on g.GenreId = ge.Id
+FROM Sales as s join SalesDetails as sd on s.id = sd.SalesId join Game as g on g.Id = sd.GameId join Genre as ge on g.GenreId = ge.Id
 WHERE s.CustomerId = CustomerSearchId
 ORDER BY 4, 1;
 
