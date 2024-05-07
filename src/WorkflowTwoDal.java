@@ -13,9 +13,9 @@ public class WorkflowTwoDal
 
     public void printReciept(String customerSelection)
     {
-        try (var stmt = connection.prepareCall("{call printCustomerReciept()}")) {
-            try (var rs = stmt.executeQuery()) {
-                System.out.printf("| %-50s | %-12s | %-10s | %-11s | %-12s |%n", "Name", "Release Date", "Quantity", "Price", "Genre");
+        try (var pcr = connection.prepareCall("{call printCustomerReciept()}")) {
+            try (var rs = pcr.executeQuery()) {
+                System.out.printf("| %-12s | %-50s | %-12s |%n", "Sale Id", "Name","Price");
                 while (rs.next()) {
                     displayRow(rs);
                 }
@@ -24,5 +24,10 @@ public class WorkflowTwoDal
         } catch (SQLException e) {
             System.out.println("Failed to print customer's reciept");
         }
+    }
+
+    private void displayRow(ResultSet rs) throws SQLException
+    {
+        System.out.printf("| %-12s | %-50s | %-12s |%n", rs.getString("Sale Id"), rs.getString("Name"), String.format("%.2f", rs.getDouble("Price")));
     }
 }
