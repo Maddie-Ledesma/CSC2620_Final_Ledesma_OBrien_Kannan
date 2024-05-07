@@ -22,7 +22,7 @@ public class PresentationLayer {
             System.out.println("        Welcome to the VideoGame Shop!");
             System.out.println("===============================================");
             System.out.println("1.- List Games in Stock");
-            System.out.println("2.- TBD");
+            System.out.println("2.- Print Recipt");
             System.out.println("3.- List Purchase History by Customer");
             System.out.println("4.- List Popular Games");
             System.out.println("5.- Search by Genre");
@@ -37,7 +37,11 @@ public class PresentationLayer {
                 if (value == 1) {
                     var dal = new WorkflowOneDal(connectionManager.getConnection());
                     dal.showStock();
-                } else if (value == 3) {
+                } //else if (value == 2){
+                    //var dal = new WorkflowTwoDal(connectionManager.getConnection());
+                    //dal.printReciept();
+                //} 
+                else if (value == 3) {
                     var dal = new WorkflowThreeDal(connectionManager.getConnection());
                     dal.showPurchasesHistory();
                 } else if (value == 4) {

@@ -158,3 +158,15 @@ ORDER BY 4, 1;
 
 END; $$
 delimiter ;
+
+delimiter $$
+DROP PROCEDURE IF EXISTS printCustomerReciept$$
+CREATE PROCEDURE printCustomerReciept (gamePurchased varchar(200))
+BEGIN
+
+SELECT sd.SalesId, g.Name, sd.Price
+FROM SalesDetails as sd JOIN Game as g on g.Id = sd.GameId
+WHERE g.Name = gamePurchased
+
+END; $$
+delimiter ;
