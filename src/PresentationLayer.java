@@ -37,6 +37,9 @@ public class PresentationLayer {
                 if (value == 1) {
                     var dal = new WorkflowOneDal(connectionManager.getConnection());
                     dal.showStock();
+                } else if (value == 3) {
+                    var dal = new WorkflowThreeDal(connectionManager.getConnection());
+                    dal.showPurchasesHistory();
                 } else if (value == 4) {
                     var dal = new WorkflowFourDal(connectionManager.getConnection());
                     dal.ListPopularGames();
