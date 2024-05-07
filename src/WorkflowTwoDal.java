@@ -25,4 +25,8 @@ public class WorkflowTwoDal
             System.out.println("Failed to print customer's reciept");
         }
     }
+
+    private void displayRow(ResultSet rs) throws SQLException {
+
+    }
 }

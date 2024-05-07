@@ -11,7 +11,7 @@ public class WorkflowFiveDal {
         this.connection = connection;
     }
 
-    private int getGenreSelection() {
+    protected int getGenreSelection() {
         try {
             try (var stm = connection.prepareStatement("select * from genre")) {
                 System.out.println("Please choose a genre to search for, or any other value to back");
@@ -45,7 +45,7 @@ public class WorkflowFiveDal {
             }
 
         } catch (SQLException e) {
-            System.out.println("Failed to show games in stock");
+            System.out.println("Failed to search by genre");
         }
     }
 
