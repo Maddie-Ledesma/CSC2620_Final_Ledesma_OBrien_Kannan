@@ -22,7 +22,7 @@ public class PresentationLayer {
             System.out.println("        Welcome to the VideoGame Shop!");
             System.out.println("===============================================");
             System.out.println("1.- List Games in Stock");
-            System.out.println("2.- Print Recipt");
+            System.out.println("2.- Purchase Game");
             System.out.println("3.- List Purchase History by Customer");
             System.out.println("4.- List Popular Games");
             System.out.println("5.- Search by Genre");
