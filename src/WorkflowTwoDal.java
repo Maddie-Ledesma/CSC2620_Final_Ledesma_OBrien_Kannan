@@ -57,9 +57,9 @@ public class WorkflowTwoDal {
                 if (salesId > 0) {
                     displayReceipt(salesId);
                 } else if (salesId == -1) {
-                    System.out.println("Failed to find or create the given customer name");
+                    System.out.println("Failed to find or create the given customer name.");
                 } else if (salesId == -2) {
-                    System.out.println("We ran out of stock for the requested game");
+                    System.out.println("either we don't have enough or ran out of stock.");
                 }
             }
         } catch (Exception ex) {
