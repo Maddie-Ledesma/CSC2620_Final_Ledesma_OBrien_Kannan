@@ -99,11 +99,30 @@ INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(4, 10, 1, 25);
 INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(4, 17, 1, 60);
 
 delimiter $$
-DROP PROCEDURE IF EXISTS addToGameSales$$ 
-CREATE PROCEDURE addToGameSales (newSaleID int, newGameTitle varchar(200), newPrice int)
+DROP PROCEDURE IF EXISTS addToCustomer$$
+CREATE PROCEDURE addToCustomer(newCustomerId int, newFirstName varchar(200), newLastName(200))
 BEGIN
-INSERT INTO GameSales(SaleID, GameTitle, Price)
-VALUES (newSaleID, newGameTitle, newPrice);
+INSERT INTO Customer(Id, FirstName, LastName)
+VALUES (newCustomerId, newFirstName, newLastName)
+END; $$
+delimiter ;
+
+delimiter $$
+DROP PROCEDURE IF EXISTS addToSales$$
+CREATE PROCEDURE addToSales (newId, newDate, newCustomerId)
+BEGIN
+INSERT INTO Sales(Id, SalesDate, CustomerId)
+VALUES (newId, newDate, newCustomerId)
+END;
+$$
+delimiter ;
+
+delimiter $$
+DROP PROCEDURE IF EXISTS addToSalesDetails$$ 
+CREATE PROCEDURE addToSalesDetails (newSaleID int, newGameId int, newQuantity int, newPrice int)
+BEGIN
+INSERT INTO SalesDetails(SalesID, GameId, Quantity, Price)
+VALUES (newSaleID, newGameId, newQuantity, newPrice);
 END;
 $$
 delimiter ;
@@ -160,13 +179,12 @@ END; $$
 delimiter ;
 
 delimiter $$
-DROP PROCEDURE IF EXISTS printCustomerReciept$$
-CREATE PROCEDURE printCustomerReciept (gamePurchased varchar(200))
+DROP PROCEDURE IF EXISTS getGamePrice$$
+CREATE PROCEDURE getGamePrice (chosenGame varchar(200))
 BEGIN
-
-SELECT sd.SalesId, g.Name, sd.Price
-FROM SalesDetails as sd JOIN Game as g on g.Id = sd.GameId
-WHERE g.Name = gamePurchased
-
-END; $$
+SELECT g.Price
+FROM Game as g
+WHERE g.Name = chosenGame
+END;
+$$
 delimiter ;

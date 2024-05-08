@@ -39,7 +39,10 @@ public class PresentationLayer {
                     dal.showStock();
                 } else if (value == 2){
                     var dal = new WorkflowTwoDal(connectionManager.getConnection());
-                    dal.printReciept(userOption);
+                    // call methods to purchase game
+                    dal.addToCustomer();
+                    dal.addToSales();
+                    dal.addToSaleDetails();
                 } 
                 else if (value == 3) {
                     var dal = new WorkflowThreeDal(connectionManager.getConnection());
