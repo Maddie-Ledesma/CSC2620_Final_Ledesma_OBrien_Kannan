@@ -9,16 +9,16 @@ import java.sql.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-public class TestWorkflowOneDal {
+public class TestWorkflowFiveDal {
     // Mock the Connection and PreparedStatement
     Connection connection = mock(Connection.class);
     CallableStatement callableStatement = mock(CallableStatement.class);
 
     // Mock the ResultSet returned by executeQuery
     ResultSet resultSet = mock(ResultSet.class);
+
 
     ByteArrayOutputStream outputStream;
     PrintStream originalOut;
@@ -41,7 +41,6 @@ public class TestWorkflowOneDal {
 
         when(connection.prepareCall(anyString())).thenReturn(callableStatement);
         when(callableStatement.executeQuery()).thenReturn(resultSet);
-        var dal = new WorkflowOneDal(connection);
 
         when(resultSet.next())
                 .thenReturn(true)
@@ -53,9 +52,12 @@ public class TestWorkflowOneDal {
         when(resultSet.getDouble("Price")).thenReturn(60.00);
         when(resultSet.getString("GenreName")).thenReturn("Action");
 
+
         System.setOut(printStream);
 
-        dal.showStock();
+        var dal = spy(new WorkflowFiveDal(connection));
+        doReturn(1).when(dal).getGenreSelection();
+        dal.searchByGenre();
 
         String capturedOutput = outputStream.toString();
         assertTrue(capturedOutput.contains("God of war"));
@@ -69,14 +71,15 @@ public class TestWorkflowOneDal {
 
         when(connection.prepareCall(anyString())).thenReturn(callableStatement);
         when(callableStatement.executeQuery()).thenReturn(resultSet);
-        var dal = new WorkflowOneDal(connection);
 
         when(resultSet.next())
                 .thenReturn(false);
 
         System.setOut(printStream);
 
-        dal.showStock();
+        var dal = spy(new WorkflowFiveDal(connection));
+        doReturn(-1).when(dal).getGenreSelection();
+        dal.searchByGenre();
 
         String capturedOutput = outputStream.toString();
         assertFalse(capturedOutput.contains("God of war"));
@@ -90,11 +93,12 @@ public class TestWorkflowOneDal {
         var message = "store procedure was not found";
         when(connection.prepareCall(anyString())).thenReturn(callableStatement);
         when(callableStatement.executeQuery()).thenThrow(new SQLException(message));
-        var dal = new WorkflowOneDal(connection);
         System.setOut(printStream);
-        dal.showStock();
+        var dal = spy(new WorkflowFiveDal(connection));
+        doReturn(1).when(dal).getGenreSelection();
+        dal.searchByGenre();
         String capturedOutput = outputStream.toString();
-        assertTrue(capturedOutput.contains("Failed to show games in stock"));
+        assertTrue(capturedOutput.contains("Failed to search by genre"));
 
     }
 

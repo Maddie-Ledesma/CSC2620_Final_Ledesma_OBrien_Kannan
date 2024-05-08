@@ -20,7 +20,7 @@ public class WorkflowFourDal {
             }
 
         } catch (SQLException e) {
-            System.out.println("Failed to show games in stock");
+            System.out.println("Failed to list popular games");
         }
     }
 

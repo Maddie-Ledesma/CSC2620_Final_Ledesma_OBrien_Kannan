@@ -12,7 +12,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TestWorkflowOneDal {
+public class TestWorkflowFourDal {
     // Mock the Connection and PreparedStatement
     Connection connection = mock(Connection.class);
     CallableStatement callableStatement = mock(CallableStatement.class);
@@ -41,25 +41,25 @@ public class TestWorkflowOneDal {
 
         when(connection.prepareCall(anyString())).thenReturn(callableStatement);
         when(callableStatement.executeQuery()).thenReturn(resultSet);
-        var dal = new WorkflowOneDal(connection);
+        var dal = new WorkflowFourDal(connection);
 
         when(resultSet.next())
                 .thenReturn(true)
+                .thenReturn(true)
                 .thenReturn(false);
 
-        when(resultSet.getString("Name")).thenReturn("God of war");
-        when(resultSet.getDate("ReleaseDate")).thenReturn(new Date(System.currentTimeMillis()));
-        when(resultSet.getInt("Quantity")).thenReturn(2);
-        when(resultSet.getDouble("Price")).thenReturn(60.00);
-        when(resultSet.getString("GenreName")).thenReturn("Action");
+        when(resultSet.getString("Name"))
+                .thenReturn("God of war")
+                .thenReturn("Diablo");
+
 
         System.setOut(printStream);
 
-        dal.showStock();
+        dal.ListPopularGames();
 
         String capturedOutput = outputStream.toString();
         assertTrue(capturedOutput.contains("God of war"));
-        assertTrue(capturedOutput.contains("60.00"));
+        assertTrue(capturedOutput.contains("Diablo"));
     }
 
     @Test
@@ -69,14 +69,14 @@ public class TestWorkflowOneDal {
 
         when(connection.prepareCall(anyString())).thenReturn(callableStatement);
         when(callableStatement.executeQuery()).thenReturn(resultSet);
-        var dal = new WorkflowOneDal(connection);
+        var dal = new WorkflowFourDal(connection);
 
         when(resultSet.next())
                 .thenReturn(false);
 
         System.setOut(printStream);
 
-        dal.showStock();
+        dal.ListPopularGames();
 
         String capturedOutput = outputStream.toString();
         assertFalse(capturedOutput.contains("God of war"));
@@ -90,11 +90,11 @@ public class TestWorkflowOneDal {
         var message = "store procedure was not found";
         when(connection.prepareCall(anyString())).thenReturn(callableStatement);
         when(callableStatement.executeQuery()).thenThrow(new SQLException(message));
-        var dal = new WorkflowOneDal(connection);
+        var dal = new WorkflowFourDal(connection);
         System.setOut(printStream);
-        dal.showStock();
+        dal.ListPopularGames();
         String capturedOutput = outputStream.toString();
-        assertTrue(capturedOutput.contains("Failed to show games in stock"));
+        assertTrue(capturedOutput.contains("Failed to list popular games"));
 
     }
 
