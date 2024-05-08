@@ -99,35 +99,6 @@ INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(4, 10, 1, 25);
 INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(4, 17, 1, 60);
 
 delimiter $$
-DROP PROCEDURE IF EXISTS addToCustomer$$
-CREATE PROCEDURE addToCustomer(newCustomerId int, newFirstName varchar(200), newLastName(200))
-BEGIN
-INSERT INTO Customer(Id, FirstName, LastName)
-VALUES (newCustomerId, newFirstName, newLastName)
-END; $$
-delimiter ;
-
-delimiter $$
-DROP PROCEDURE IF EXISTS addToSales$$
-CREATE PROCEDURE addToSales (newId, newDate, newCustomerId)
-BEGIN
-INSERT INTO Sales(Id, SalesDate, CustomerId)
-VALUES (newId, newDate, newCustomerId)
-END;
-$$
-delimiter ;
-
-delimiter $$
-DROP PROCEDURE IF EXISTS addToSalesDetails$$ 
-CREATE PROCEDURE addToSalesDetails (newSaleID int, newGameId int, newQuantity int, newPrice int)
-BEGIN
-INSERT INTO SalesDetails(SalesID, GameId, Quantity, Price)
-VALUES (newSaleID, newGameId, newQuantity, newPrice);
-END;
-$$
-delimiter ;
-
-delimiter $$
 DROP PROCEDURE IF EXISTS searchByGenre$$
 CREATE PROCEDURE searchByGenre (GenreSearchId int )
 BEGIN 
@@ -179,12 +150,44 @@ END; $$
 delimiter ;
 
 delimiter $$
-DROP PROCEDURE IF EXISTS getGamePrice$$
-CREATE PROCEDURE getGamePrice (chosenGame varchar(200))
+DROP PROCEDURE IF EXISTS getCustomerId$$
+CREATE PROCEDURE getCustomerId (IN first varchar(200), IN last varchar(200), OUT _customerId INT)
 BEGIN
-SELECT g.Price
-FROM Game as g
-WHERE g.Name = chosenGame
+    SELECT Id INTO _customerId FROM Customer WHERE UPPER(FirstName) = UPPER(first) AND UPPER(LastName) = UPPER(last);
+    IF _customerId IS NULL THEN
+       -- Creating new customer.
+       INSERT INTO Customer(FirstName, LastName) VALUES(first, last);
+       SET _customerId = LAST_INSERT_ID();
+    END IF;
+END;
+$$
+delimiter ;
+
+delimiter $$
+DROP PROCEDURE IF EXISTS doPurchase$$
+CREATE PROCEDURE doPurchase (IN _customerId INT, IN _gameName varchar(200), IN _quantity INT, OUT _salesId INT)
+BEGIN
+    DECLARE _gameId INT;
+    DECLARE _stockQuantity INT;
+    DECLARE _price DOUBLE;
+
+    SELECT Id, Quantity, Price INTO _gameId, _stockQuantity, _price FROM Game WHERE UPPER(name) = UPPER(_gameName);
+    IF _gameId IS NOT NULL THEN
+        -- Check if there's enough quantity in stock
+        IF _stockQuantity >= _quantity THEN
+            -- Register the sales
+            INSERT INTO Sales(CustomerId, SalesDate) VALUES(_customerId, now());
+            SET _salesId = LAST_INSERT_ID();
+            -- Create details
+            INSERT INTO SalesDetails(SalesId, GameId, Quantity, Price) VALUES(_salesId, _gameId, _quantity, _price);
+            -- Reducing stock quantity
+            UPDATE Game SET Quantity = Quantity - _quantity WHERE Id = _gameId;
+        ELSE
+            SET _salesId = -2; -- There's not enough quantity in stock
+        END IF;
+    ELSE
+        SET _salesId = -1; -- Give game's name was not found
+    END IF;
 END;
 $$
 delimiter ;

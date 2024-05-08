@@ -1,23 +1,18 @@
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Scanner;
-import java.sql.ResultSet;
-import java.util.StringTokenizer;
 
-public class WorkflowTwoDal 
-{
+public class WorkflowTwoDal {
     private final Connection connection;
 
-    public WorkflowTwoDal(Connection connection) throws SQLException
-    {
+    public WorkflowTwoDal(Connection connection) throws SQLException {
         this.connection = connection;
     }
 
-    public void addToCustomer()
-    {
-        int cusID = getCustomerId() + 1;
-        try
-        {
+    public int getCustomerId() {
+        int cusID = -1;
+        try {
             var customerInput = new Scanner(System.in);
             // System.out.println("Please enter a new customer id number.");
             System.out.println("Please type your full name");
@@ -26,190 +21,85 @@ public class WorkflowTwoDal
             if (tokens.length != 2) {
                 System.err.println("Invalid name provider, please provide your first and last name.");
             }
-            try (var stmt = connection.prepareStatement("{call addToCustomer(?)}")) {
-                stmt.setInt(1, cusID);
-                stmt.setString(2, tokens[0].toUpperCase());
-                stmt.setString(3, tokens[1].toUpperCase());
-                try(var rs = stmt.executeQuery()) {
-                    System.out.println("Success!");
-                }
+            try (var stmt = connection.prepareCall("{call getCustomerId(?, ?, ?)}")) {
+                stmt.setString(1, tokens[0].trim().toUpperCase());
+                stmt.setString(2, tokens[1].trim().toUpperCase());
+                stmt.registerOutParameter(3, Types.INTEGER);
+                stmt.execute();
+                return stmt.getInt(3);
             }
+        } catch (Exception ex) {
+            System.out.println("Failed to find or create a customer");
+            ex.printStackTrace();
         }
-        catch (Exception ex) 
-        {
-        }
-    } 
+        return cusID;
+    }
 
-    public void addToSales()
-    {
-        int saleId = getSaleId() + 1;
-        int customerId = getCustomerId() + 1;
+    public void purchaseGame() {
+        var customerId = getCustomerId();
+        System.out.println("customer id: " + customerId);
+        if (customerId == -1) {
+            return;
+        }
         var gameScan = new Scanner(System.in);
-        try
-        {
-            System.out.println("What game would you like to purchase? You can only purchase one copy of a game per customer.");
+        try {
+            System.out.println("What game would you like to purchase?");
             var gameName = gameScan.nextLine();
-            System.out.println("Please enter todays date.");
-            var date = gameScan.nextLine();
-            try(var ats = connection.prepareStatement("{call addToSales(?)}"))
-            {
-                ats.setInt(1, saleId);
-                ats.setString(2, date);
-                ats.setInt(3, customerId);
-            }
-        }
-        catch (Exception ex) 
-        {
-        }
-        
-        while(true)
-        {
-            System.out.println("Would you like to purchase another game?");
-            var purchaseAnother = gameScan.nextLine();
-            if (purchaseAnother.equals("Yes"))
-            {
-                try
-                {
-                    System.out.println("What game would you like to purchase? You can only purchase one copy of a game per customer.");
-                    var gameName = gameScan.nextLine();
-                    System.out.println("Please enter todays date.");
-                    var date = gameScan.nextLine();
-                    try(var ats = connection.prepareStatement("{call addToSales(?)}"))
-                    {
-                        ats.setInt(1, saleId);
-                        ats.setString(2, date);
-                        ats.setInt(3, customerId);
-                    }
-                }
-                catch (Exception ex) 
-                {
-                }
-            }
-            if(purchaseAnother.equals("No"))
-            {
-                break;
-            }
-        }
-
-    }
-
-    public void addToSaleDetails()
-    {
-        int price = getGamePrice();
-        int saleId = getSaleDetailsId();
-        int quantity = 1;
-        int gameId = getGameId();
-        try(var ats = connection.prepareStatement("{call addToSalesDetails(?)}"))
-                    {
-                        ats.setInt(1, saleId);
-                        ats.setInt(2, gameId);
-                        ats.setInt(3, quantity);
-                        ats.setInt(4, price);
-                    }
-                
-                catch (Exception ex) 
-                {
-                }
-    }
-
-    
-    private int getCustomerId() {
-        var customerId = -1;
-        try {
-            final String SQL = "SELECT MAX(Id) FROM Customer";
-            try (var stmt = connection.prepareStatement(SQL)) {
-                try(var rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        customerId = rs.getInt("Id");
-                    }
-                    if (customerId == -1) {
-                        System.err.println("Not customer was found with the given Id.");
-                    }
+            System.out.println("How many copies?");
+            var copies = gameScan.nextInt();
+            try (var ats = connection.prepareCall("{call doPurchase(?,?,?,?)}")) {
+                ats.setInt(1, customerId);
+                ats.setString(2, gameName);
+                ats.setInt(3, copies);
+                ats.registerOutParameter(4, Types.INTEGER);
+                ats.execute();
+                var salesId = ats.getInt(4);
+                if (salesId > 0) {
+                    displayReceipt(salesId);
+                } else if (salesId == -1) {
+                    System.out.println("Failed to find or create the given customer name");
+                } else if (salesId == -2) {
+                    System.out.println("We ran out of stock for the requested game");
                 }
             }
         } catch (Exception ex) {
-            // Nothing to do, probably customer was not found
+            ex.printStackTrace();
+            System.out.println("Failed to purchase the game");
         }
-        return customerId;
-    }
-    
-    private int getSaleId() {
-        var saleId = -1;
-        try {
-            final String SQL = "SELECT MAX(Id) FROM Sales";
-            try (var stmt = connection.prepareStatement(SQL)) {
-                try(var rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        saleId = rs.getInt("Id");
-                    }
-                    if (saleId == -1) {
-                        System.err.println("Not customer was found with the given id.");
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            // Nothing to do, probably customer was not found
-        }
-        return saleId;
     }
 
-    private int getSaleDetailsId() {
-        var saleDetailsId = -1;
-        try {
-            final String SQL = "SELECT MAX(Id) FROM SalesDetails";
-            try (var stmt = connection.prepareStatement(SQL)) {
-                try(var rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        saleDetailsId = rs.getInt("SalesId");
-                    }
-                    if (saleDetailsId == -1) {
-                        System.err.println("Not customer was found with the given id.");
-                    }
+    private void displayReceipt(int salesId) throws SQLException {
+        // Get customer and sales information
+        final String SQL = "SELECT s.SalesDate, c.FirstName, c.LastName FROM Sales AS s "
+        + "JOIN Customer AS c ON c.Id = s.CustomerId WHERE s.Id = ?";
+        try(var pstm = connection.prepareStatement(SQL)) {
+            pstm.setInt(1, salesId);
+            try(var rs = pstm.executeQuery()) {
+                if(rs.next()) {
+                    System.out.printf("Invoice ID: %d \t\t\t Date: %s%n", salesId, rs.getDate("SalesDate"));
+                    System.out.printf("Customer: %s %s%n", rs.getString("FirstName"), rs.getString("LastName"));
+                    displayDetails(salesId);
                 }
             }
-        } catch (Exception ex) {
-            // Nothing to do, probably customer was not found
         }
-        return saleDetailsId;
     }
 
-    private int getGameId() {
-        var gameId = -1;
-        try {
-            final String SQL = "SELECT MAX(Id) FROM Game";
-            try (var stmt = connection.prepareStatement(SQL)) {
-                try(var rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        gameId = rs.getInt("Id");
-                    }
-                    if (gameId == -1) {
-                        System.err.println("Not game was found with the given Id.");
-                    }
+    private void displayDetails(int salesId) throws SQLException {
+        final String SQL = "SELECT g.Name, sd.Quantity, sd.Price FROM SalesDetails AS sd "
+                + "JOIN Game AS g ON g.id = sd.GameId WHERE sd.SalesId = ?";
+        try(var pstm = connection.prepareStatement(SQL)) {
+            pstm.setInt(1, salesId);
+            try(var rs = pstm.executeQuery()) {
+                System.out.printf("| %-50s | %-10s | %-11s | %-12s |%n", "Name", "Quantity", "Price", "Total");
+                while(rs.next()) {
+                    var quantity = rs.getInt("Quantity");
+                    var price = rs.getDouble("Price");
+                    System.out.printf("| %-50s | %-10s | %-11s | %-12s |%n",
+                            rs.getString("Name"), quantity,
+                            String.format("%.2f", price), String.format("%.2f", price * quantity)
+                    );
                 }
             }
-        } catch (Exception ex) {
-            // Nothing to do, probably customer was not found
         }
-        return gameId;
     }
-    
-    private int getGamePrice() 
-    {
-        int gamePrice = 0;
-        try {
-            try (var stmt = connection.prepareStatement("call getGamePrice(?)")) {
-                try(var rs = stmt.executeQuery()) {
-                    
-                        gamePrice = rs.getInt("Price");
-                   
-                }
-            }
-           
-        } catch (Exception ex) {
-            // Nothing to do, probably customer was not found
-        }
-        return gamePrice;
-        
-    }
-    
 }

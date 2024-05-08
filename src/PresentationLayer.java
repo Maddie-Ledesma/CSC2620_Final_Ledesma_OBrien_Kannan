@@ -40,10 +40,8 @@ public class PresentationLayer {
                 } else if (value == 2){
                     var dal = new WorkflowTwoDal(connectionManager.getConnection());
                     // call methods to purchase game
-                    dal.addToCustomer();
-                    dal.addToSales();
-                    dal.addToSaleDetails();
-                } 
+                    dal.purchaseGame();
+                }
                 else if (value == 3) {
                     var dal = new WorkflowThreeDal(connectionManager.getConnection());
                     dal.showPurchasesHistory();
