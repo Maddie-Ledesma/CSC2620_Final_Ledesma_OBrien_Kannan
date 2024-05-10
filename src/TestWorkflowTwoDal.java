@@ -9,16 +9,18 @@ import java.sql.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class TestWorkflowTwoDal 
 {
     Connection connection = mock(Connection.class);
     CallableStatement callableStatement = mock(CallableStatement.class);
+    PreparedStatement salesPstm = mock(PreparedStatement.class);
+    PreparedStatement salesDetailsPstm = mock(PreparedStatement.class);
 
     // Mock the ResultSet returned by executeQuery
-    ResultSet resultSet = mock(ResultSet.class);
+    ResultSet salesRS = mock(ResultSet.class);
+    ResultSet salesDetailsRS = mock(ResultSet.class);
 
     ByteArrayOutputStream outputStream;
     PrintStream originalOut;
@@ -32,67 +34,108 @@ public class TestWorkflowTwoDal
     public void afterEachTest() {
         System.out.flush();
         System.setOut(originalOut);
-    }   
+    }
 
+    @Test
     public void testSuccess() throws SQLException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(outputStream);
 
         when(connection.prepareCall(anyString())).thenReturn(callableStatement);
-        when(callableStatement.executeQuery()).thenReturn(resultSet);
-        WorkflowTwoDal dal = new WorkflowTwoDal(connection);
+        when(callableStatement.execute()).thenReturn(false);
+        WorkflowTwoDal dal = spy(new WorkflowTwoDal(connection));
 
-        when(resultSet.next())
+        final String gameName = "God of war";
+        final int quantity = 2;
+        doReturn(1).when(dal).getCustomerId();
+        doReturn(gameName).when(dal).getGameName(any());
+        doReturn(quantity).when(dal).getQuantity(any());
+
+        //  Sales created
+        when(callableStatement.getInt(4)).thenReturn(1);
+
+        // Returning head information
+        when(connection.prepareStatement(contains("Customer"))).thenReturn(salesPstm);
+        when(salesPstm.executeQuery()).thenReturn(salesRS);
+        when(salesRS.next())
                 .thenReturn(true)
                 .thenReturn(false);
 
                 
-        when(resultSet.getString("Name")).thenReturn("God of war");
-        when(resultSet.getInt("Quantity")).thenReturn(2);
-        when(resultSet.getDouble("Price")).thenReturn(60.00);
-        when(resultSet.getString("Total")).thenReturn("120");
+        when(salesRS.getDate("SalesDate")).thenReturn(new Date(System.currentTimeMillis()));
+        when(salesRS.getString("FirstName")).thenReturn("John");
+        when(salesRS.getString("LastName")).thenReturn("Doe");
 
-        dal.purchaseGame();
+        // Return Sales Details
+        when(connection.prepareStatement(contains("Game"))).thenReturn(salesDetailsPstm);
+        when(salesDetailsPstm.executeQuery()).thenReturn(salesDetailsRS);
 
-        String capturedOutput = outputStream.toString();
-        assertTrue(capturedOutput.contains("God of war"));
-        assertTrue(capturedOutput.contains("60.00"));
-    }
-
-    @Test
-    public void testNotResults() throws SQLException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintStream printStream = new PrintStream(outputStream);
-
-        when(connection.prepareCall(anyString())).thenReturn(callableStatement);
-        when(callableStatement.executeQuery()).thenReturn(resultSet);
-        var dal = new WorkflowTwoDal(connection);
-
-        when(resultSet.next())
+        when(salesDetailsRS.next())
+                .thenReturn(true)
                 .thenReturn(false);
 
+        when(salesDetailsRS.getInt("Quantity")).thenReturn(quantity);
+        when(salesDetailsRS.getDouble("Price")).thenReturn(60.00);
+        when(salesDetailsRS.getString("Name")).thenReturn(gameName);
+
         System.setOut(printStream);
 
         dal.purchaseGame();
 
         String capturedOutput = outputStream.toString();
-        assertFalse(capturedOutput.contains("God of war"));
+        assertTrue(capturedOutput.contains(gameName));
+        assertTrue(capturedOutput.contains("60.00"));
     }
-
     @Test
-    public void testException() throws SQLException {
+    public void testCustomerNotFound() throws SQLException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(outputStream);
 
-        var message = "store procedure was not found";
         when(connection.prepareCall(anyString())).thenReturn(callableStatement);
-        when(callableStatement.executeQuery()).thenThrow(new SQLException(message));
-        var dal = new WorkflowTwoDal(connection);
-        System.setOut(printStream);
-        dal.purchaseGame();
-        String capturedOutput = outputStream.toString();
-        assertTrue(capturedOutput.contains("Failed to purchase a game"));
+        when(callableStatement.execute()).thenReturn(false);
+        WorkflowTwoDal dal = spy(new WorkflowTwoDal(connection));
 
+        final String gameName = "God of war";
+        final int quantity = 2;
+        doReturn(1).when(dal).getCustomerId();
+        doReturn(gameName).when(dal).getGameName(any());
+        doReturn(quantity).when(dal).getQuantity(any());
+
+        //  Sales created
+        when(callableStatement.getInt(4)).thenReturn(-1);
+
+        System.setOut(printStream);
+
+        dal.purchaseGame();
+
+        String capturedOutput = outputStream.toString();
+        assertTrue(capturedOutput.contains("Failed to find or create the given customer name."));
+    }
+
+    @Test
+    public void testGameNotFound() throws SQLException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(outputStream);
+
+        when(connection.prepareCall(anyString())).thenReturn(callableStatement);
+        when(callableStatement.execute()).thenReturn(false);
+        WorkflowTwoDal dal = spy(new WorkflowTwoDal(connection));
+
+        final String gameName = "God of war";
+        final int quantity = 2;
+        doReturn(1).when(dal).getCustomerId();
+        doReturn(gameName).when(dal).getGameName(any());
+        doReturn(quantity).when(dal).getQuantity(any());
+
+        //  Sales created
+        when(callableStatement.getInt(4)).thenReturn(-2);
+
+        System.setOut(printStream);
+
+        dal.purchaseGame();
+
+        String capturedOutput = outputStream.toString();
+        assertTrue(capturedOutput.contains("either we don't have enough or ran out of stock."));
     }
 
 }

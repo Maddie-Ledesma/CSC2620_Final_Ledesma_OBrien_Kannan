@@ -10,7 +10,7 @@ public class WorkflowTwoDal {
         this.connection = connection;
     }
 
-    public int getCustomerId() {
+    protected int getCustomerId() {
         int cusID = -1;
         try {
             var customerInput = new Scanner(System.in);
@@ -35,6 +35,16 @@ public class WorkflowTwoDal {
         return cusID;
     }
 
+    protected String getGameName(Scanner scanner) {
+        System.out.println("What game would you like to purchase?");
+        return scanner.nextLine();
+    }
+
+    protected int getQuantity(Scanner scanner) {
+        System.out.println("How many copies?");
+        return scanner.nextInt();
+    }
+
     public void purchaseGame() {
         var customerId = getCustomerId();
         System.out.println("customer id: " + customerId);
@@ -44,9 +54,8 @@ public class WorkflowTwoDal {
         var gameScan = new Scanner(System.in);
         try {
             System.out.println("What game would you like to purchase?");
-            var gameName = gameScan.nextLine();
-            System.out.println("How many copies?");
-            var copies = gameScan.nextInt();
+            var gameName = getGameName(gameScan);
+            var copies = getQuantity(gameScan);
             try (var ats = connection.prepareCall("{call doPurchase(?,?,?,?)}")) {
                 ats.setInt(1, customerId);
                 ats.setString(2, gameName);

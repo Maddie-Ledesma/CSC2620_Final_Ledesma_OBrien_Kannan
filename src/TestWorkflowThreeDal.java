@@ -9,8 +9,7 @@ import java.sql.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class TestWorkflowThreeDal {
     // Mock the Connection and PreparedStatement
@@ -41,7 +40,8 @@ public class TestWorkflowThreeDal {
 
         when(connection.prepareCall(anyString())).thenReturn(callableStatement);
         when(callableStatement.executeQuery()).thenReturn(resultSet);
-        var dal = new WorkflowThreeDal(connection);
+        var dal = spy(new WorkflowThreeDal(connection));
+        doReturn(1).when(dal).getCustomerId();
 
         when(resultSet.next())
                 .thenReturn(true)
@@ -69,7 +69,8 @@ public class TestWorkflowThreeDal {
 
         when(connection.prepareCall(anyString())).thenReturn(callableStatement);
         when(callableStatement.executeQuery()).thenReturn(resultSet);
-        var dal = new WorkflowThreeDal(connection);
+        var dal = spy(new WorkflowThreeDal(connection));
+        doReturn(99).when(dal).getCustomerId();
 
         when(resultSet.next())
                 .thenReturn(false);
@@ -90,7 +91,8 @@ public class TestWorkflowThreeDal {
         var message = "store procedure was not found";
         when(connection.prepareCall(anyString())).thenReturn(callableStatement);
         when(callableStatement.executeQuery()).thenThrow(new SQLException(message));
-        var dal = new WorkflowThreeDal(connection);
+        var dal = spy(new WorkflowThreeDal(connection));
+        doReturn(1).when(dal).getCustomerId();
         System.setOut(printStream);
         dal.showPurchasesHistory();
         String capturedOutput = outputStream.toString();

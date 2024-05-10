@@ -12,7 +12,7 @@ public class WorkflowThreeDal {
         this.connection = connection;
     }
 
-    private int getCustomerId() {
+    protected int getCustomerId() {
         var customerId = -1;
         try {
             var customerScanner = new Scanner(System.in);
